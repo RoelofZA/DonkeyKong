@@ -1,0 +1,22 @@
+{
+  "name": "donkeykong",
+  "version": "1.0.0",
+  "description": "DonkeyKong game",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RoelofZA/DonkeyKong.git"
+  },
+  "keywords": [
+    "game"
+  ],
+  "author": "Roelof Briers",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RoelofZA/DonkeyKong/issues"
+  },
+  "homepage": "https://github.com/RoelofZA/DonkeyKong#readme"
+}
