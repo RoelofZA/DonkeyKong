@@ -27,7 +27,7 @@ gameScene.update = function() {
     }
     else if (this.player.scaleX <= 0.1)
     {
-        zzz = 0.001;
+        zzz = 0.0015;
     }
     this.player.scaleX += zzz;
     this.player.scaleY += zzz;
