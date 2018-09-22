@@ -32,7 +32,7 @@ gameScene.update = function() {
     this.player.scaleX += zzz;
     this.player.scaleY += zzz;
 
-    if (this.player.x >= 400)
+    if (this.player.x >= 500)
     {
         playerX = -2;
     }
