@@ -25,7 +25,7 @@ var game = new Phaser.Game(config);
 
 // Load Assets
 gameScene.preload = function() {
-    this.load.image('background', 'Assets/background/bgcity.jpg');
+    this.load.image('background', 'Assets/background/bgcity2.jpg');
     this.load.image('slime', 'Assets/ooz_slime.png');
     this.load.image('metal', 'Assets/metal_plates.png');
     this.load.spritesheet('idle', 'assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 47, endFrame: 9 });
@@ -34,6 +34,10 @@ gameScene.preload = function() {
 
 // Create Game
 gameScene.create = function() {
+
+    this.cameras.main.setBounds(0, 0, 3494/2, 1200/2);
+    this.physics.world.setBounds(0, 150, 3494/2, 880/2);
+
     cursors = this.input.keyboard.createCursorKeys();
 
     var background = this.add.sprite(0, 0, 'background');
@@ -69,9 +73,16 @@ gameScene.create = function() {
     //player.play('idleAnimation');
     //player = this.physics.add.image(150, 150, 'slime');
     //player.setScale(0.2, 0.2);
+    
     player.setCollideWorldBounds(true);
 
     //timedEvent = this.time.delayedCall(3000, onEvent, [], this);
+
+    this.cameras.main.startFollow(player, true);
+    // this.cameras.main.startFollow(player, true, 0.1, 0.1);
+
+    this.cameras.main.setDeadzone(300, 200);
+    //this.cameras.main.setZoom(1);
 };
 
 gameScene.update = function() {
