@@ -4,6 +4,9 @@ var zzz = 0.1;
 var playerX = 2;
 var player, cursors, speed = 300;
 var bored = false;
+var bullets, bulletDirection;
+var lastFired = 0;
+var speed = 300;
 
 // Config
 var config = {
@@ -25,7 +28,7 @@ var game = new Phaser.Game(config);
 
 // Load Assets
 gameScene.preload = function() {
-    this.load.image('background', 'Assets/background/bgcity2.jpg');
+    this.load.image('background', 'Assets/background/bgcity.jpg');
     this.load.image('slime', 'Assets/ooz_slime.png');
     this.load.image('metal', 'Assets/metal_plates.png');
     this.load.spritesheet('idle', 'assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 47, endFrame: 9 });
@@ -40,11 +43,54 @@ gameScene.create = function() {
 
     cursors = this.input.keyboard.createCursorKeys();
 
-    var background = this.add.sprite(0, 0, 'background');
-    background.setOrigin(0,0);
-    background.setScale(0.5,0.5);
-    
+    for (x = 0; x < 3; x++)
+    {
+        var bg = this.add.image((1747*0.3) * x, 0, 'background').setOrigin(0);
+        bg.setScale(0.3,0.3);
+    }
 
+    // Add Bullets
+    var Bullet = new Phaser.Class({
+
+        Extends: Phaser.GameObjects.Image,
+
+        initialize:
+
+        function Bullet (scene)
+        {
+            Phaser.GameObjects.Image.call(this, scene, 0, 0, 'slime');
+            this.setScale(0.05,0.05);
+            this.speed = Phaser.Math.GetSpeed(1900, 1);
+        },
+
+        fire: function (x, y)
+        {
+            this.setPosition(x+50, y);
+
+            this.setActive(true);
+            this.setVisible(true);
+        },
+
+        update: function (time, delta)
+        {
+            var i = 1;
+            if (bulletDirection) i=-1;
+
+            this.x += this.speed * delta*i;
+
+            if (this.x > player.x + 500 || this.x < player.x - 500 || this.x <= 0)
+            {
+                this.setActive(false);
+                this.setVisible(false);
+            }
+        }
+
+    });
+    bullets = this.add.group({
+        classType: Bullet,
+        maxSize: 1,
+        runChildUpdate: true
+    });
 
     var config = {
         key: 'idleAnimation',
@@ -85,10 +131,21 @@ gameScene.create = function() {
     //this.cameras.main.setZoom(1);
 };
 
-gameScene.update = function() {
+gameScene.update = function(time, delta) {
     player.setVelocity(0);
     player.rotation = 0;
-    
+
+    if (cursors.space.isDown && time > lastFired)
+    {
+        var bullet = bullets.get();
+
+        if (bullet)
+        {
+            bullet.fire(player.x, player.y);
+            bulletDirection = player.flipX;
+            lastFired = time + 50;
+        }
+    }
 
     if (cursors.left.isDown)
     {
