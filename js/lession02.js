@@ -2,7 +2,7 @@
 var gameScene = new Phaser.Scene('game');
 var zzz = 0.1;
 var playerX = 2;
-var player, cursors, speed = 300;
+var player, enemy, cursors, speed = 300;
 var bored = false;
 var bullets, bulletDirection;
 var lastFired = 0;
@@ -11,13 +11,14 @@ var speed = 300;
 // Config
 var config = {
     type: Phaser.AUTO,
+    antialias: false,
     width: 800,
     height: 600,
     scene: gameScene,
     physics: {
         default: 'arcade',
         arcade: {
-            debug: false
+            debug: true
         }
     },
     
@@ -29,8 +30,8 @@ var game = new Phaser.Game(config);
 // Load Assets
 gameScene.preload = function() {
     this.load.image('background', 'Assets/background/bgcity.jpg');
-    this.load.image('slime', 'Assets/ooz_slime.png');
-    this.load.image('metal', 'Assets/metal_plates.png');
+    this.load.image('slime', 'Assets/ooz_slime_small.png');
+    this.load.image('metal', 'Assets/metal_plates_small.png');
     this.load.spritesheet('idle', 'assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 47, endFrame: 9 });
     this.load.spritesheet('walk', 'assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 47, startFrame: 10, endFrame: 13 });
 };
@@ -39,7 +40,7 @@ gameScene.preload = function() {
 gameScene.create = function() {
 
     this.cameras.main.setBounds(0, 0, 3494/2, 1200/2);
-    this.physics.world.setBounds(0, 150, 3494/2, 880/2);
+    this.physics.world.setBounds(0, 0, 3494/2, 880/2);
 
     cursors = this.input.keyboard.createCursorKeys();
 
@@ -52,45 +53,61 @@ gameScene.create = function() {
     // Add Bullets
     var Bullet = new Phaser.Class({
 
-        Extends: Phaser.GameObjects.Image,
+        Extends: Phaser.Physics.Arcade.Sprite,
 
         initialize:
 
         function Bullet (scene)
         {
-            Phaser.GameObjects.Image.call(this, scene, 0, 0, 'slime');
-            this.setScale(0.05,0.05);
-            this.speed = Phaser.Math.GetSpeed(1900, 1);
+            Phaser.Physics.Arcade.Sprite.call(this, scene, 0, 0, 'slime');
+            this.pathSpeed = Phaser.Math.GetSpeed(2000, 0.1);
+            this.born = 0;
         },
 
         fire: function (x, y)
         {
             this.setPosition(x+50, y);
-
             this.setActive(true);
             this.setVisible(true);
+            this.born = 0;
         },
 
-        update: function (time, delta)
+        preUpdate: function (time, delta)
         {
+            this.anims.update(time, delta);
+        },
+        update: function(time, delta)
+        {
+            if (this.active === false){
+                return;
+            }
+
+            console.log(this.active);
             var i = 1;
             if (bulletDirection) i=-1;
+            
+            this.setPosition(this.x + (this.pathSpeed * i), this.y);
 
-            this.x += this.speed * delta*i;
+            this.born += delta;
 
-            if (this.x > player.x + 500 || this.x < player.x - 500 || this.x <= 0)
+            //console.log(this.born);
+            if (this.born >=400)
             {
                 this.setActive(false);
                 this.setVisible(false);
-            }
+                this.destroy();
+            } 
         }
 
     });
-    bullets = this.add.group({
+    
+    bullets = this.physics.add.group({
         classType: Bullet,
         maxSize: 1,
         runChildUpdate: true
     });
+
+    enemies = this.physics.add.Group();
 
     var config = {
         key: 'idleAnimation',
@@ -116,49 +133,62 @@ gameScene.create = function() {
     
     player = this.physics.add.sprite(150, 150, 'idle');
     player.setScale(4,4);
-    //player.play('idleAnimation');
-    //player = this.physics.add.image(150, 150, 'slime');
-    //player.setScale(0.2, 0.2);
-    
     player.setCollideWorldBounds(true);
 
-    //timedEvent = this.time.delayedCall(3000, onEvent, [], this);
-
     this.cameras.main.startFollow(player, true);
-    // this.cameras.main.startFollow(player, true, 0.1, 0.1);
-
     this.cameras.main.setDeadzone(300, 200);
-    //this.cameras.main.setZoom(1);
+
+    enemies.createMultiple({ 
+        key: 'metal', 
+        frame: [0], 
+        frameQuantity: 1, 
+        repeat: 5,
+        immovable: true });
+
+    Phaser.Actions.SetXY(enemies.getChildren(), 500, 350, 200);
+
+    //enemy = this.physics.add.sprite(550, 350, 'metal');
+    //enemy = this.physics.add.sprite(1050, 350, 'metal');
+    
+    this.physics.add.collider(player, enemies, walkIntoEnemy);
 };
 
 gameScene.update = function(time, delta) {
+
     player.setVelocity(0);
-    player.rotation = 0;
+
+    
+    // Get bullet from bullets group
 
     if (cursors.space.isDown && time > lastFired)
     {
+        
         var bullet = bullets.get();
-
         if (bullet)
         {
+            //bullet.setActive(true).setVisible(true);
+            //bullet.fire(player, player);
+            //debugger;
             bullet.fire(player.x, player.y);
+            this.physics.add.collider(enemies, bullets, hitEnemy, function ()
+            {
+                this.physics.world.removeCollider(this);
+            }, this);
             bulletDirection = player.flipX;
             lastFired = time + 50;
+            console.log('fire');
         }
     }
 
     if (cursors.left.isDown)
     {
-        //player.anims.remove('boredAnimation');
         player.setVelocityX(-speed);
         player.anims.play('walkAnimation', true);
         player.flipX = true;
         bored = false;
-        //player.angle = -15;
     }
     else if (cursors.right.isDown)
     {
-        //player.anims.remove('boredAnimation');
         player.setVelocityX(speed);
         player.anims.play('walkAnimation', true);
         player.flipX = false;
@@ -185,4 +215,29 @@ function onEvent ()
 {
     bored = true;
     player.anims.play('boredAnimation', true);
+}
+
+function hitEnemy(playerHit, bulletHit)
+{
+    //console.log(playerHit);
+    //debugger;
+    bullets.killAndHide(bulletHit);
+    enemies.killAndHide(playerHit);
+    playerHit.destroy();
+    bulletHit.destroy();
+
+    /* if (enemy.active === true)
+    {
+        console.log('Woof');
+        // Destroy bullet
+        bulletHit.setActive(false).setVisible(false);
+        //bulletHit.destroy();
+        playerHit.setVisible(false).setActive(false);
+    } */
+}
+
+function walkIntoEnemy(playerHit, bulletHit)
+{
+    player.setVelocityX(0);
+    console.log('aaa');
 }
