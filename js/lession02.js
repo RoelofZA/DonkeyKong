@@ -1,12 +1,13 @@
 // Set Scene
 var gameScene = new Phaser.Scene('game');
-var zzz = 0.1;
+var zzz = 0.1, bb;
 var playerX = 2;
 var player, enemy, cursors, speed = 300;
 var bored = false;
 var bullets, bulletDirection;
 var lastFired = 0;
 var speed = 300;
+var movingLeft = false, movingRight = false;
 
 // Config
 var config = {
@@ -107,7 +108,7 @@ gameScene.create = function() {
         runChildUpdate: true
     });
 
-    enemies = this.physics.add.Group();
+    enemies = this.physics.add.group();
 
     var config = {
         key: 'idleAnimation',
@@ -133,6 +134,7 @@ gameScene.create = function() {
     
     player = this.physics.add.sprite(150, 150, 'idle');
     player.setScale(4,4);
+    player.setBounce(1, 1);
     player.setCollideWorldBounds(true);
 
     this.cameras.main.startFollow(player, true);
@@ -147,16 +149,13 @@ gameScene.create = function() {
 
     Phaser.Actions.SetXY(enemies.getChildren(), 500, 350, 200);
 
-    //enemy = this.physics.add.sprite(550, 350, 'metal');
-    //enemy = this.physics.add.sprite(1050, 350, 'metal');
-    
-    this.physics.add.collider(player, enemies, walkIntoEnemy);
+    //bb = this.physics.add.collider(player, enemies, walkIntoEnemy);
+    this.physics.add.overlap(player, enemies, walkIntoEnemyO);
 };
 
 gameScene.update = function(time, delta) {
 
-    player.setVelocity(0);
-
+    
     
     // Get bullet from bullets group
 
@@ -180,15 +179,22 @@ gameScene.update = function(time, delta) {
         }
     }
 
-    if (cursors.left.isDown)
+    if (cursors.left.isDown && !movingLeft)
     {
+        if (this.physics.world.collide(player, enemies) || this.physics.world.overlap(player, enemies))
+            return;
+
         player.setVelocityX(-speed);
         player.anims.play('walkAnimation', true);
         player.flipX = true;
         bored = false;
     }
-    else if (cursors.right.isDown)
+    else if (cursors.right.isDown && !movingRight)
     {
+        if (this.physics.world.collide(player, enemies) || this.physics.world.overlap(player, enemies))
+            return;
+
+        //movingRight = true;
         player.setVelocityX(speed);
         player.anims.play('walkAnimation', true);
         player.flipX = false;
@@ -196,6 +202,10 @@ gameScene.update = function(time, delta) {
     }
     else
     {
+        //movingLeft = false;
+        //movingRight = false;
+        player.setVelocity(0);
+
         if(!bored){
             bored = true;
             player.anims.play('idleAnimation');
@@ -235,9 +245,15 @@ function hitEnemy(playerHit, bulletHit)
         playerHit.setVisible(false).setActive(false);
     } */
 }
-
-function walkIntoEnemy(playerHit, bulletHit)
+function walkIntoEnemyO(playerHit, enemy)
 {
-    player.setVelocityX(0);
-    console.log('aaa');
+    debugger;
+    playerHit.x = playerHit.x + ((playerHit.body.velocity.x/60)*-1);
+
+/*     player.body.stop();
+    player.setVelocityX(0); */
+
+    playerHit.body.stop();
+    playerHit.setVelocityX(0);
+
 }
