@@ -1,13 +1,15 @@
 // Set Scene
-var gameScene = new Phaser.Scene('game');
+//ar gameScene = new Phaser.Scene('game');
+
 var zzz = 0.1, bb;
 var playerX = 2;
-var player, enemy, cursors, speed = 300;
+var player1, enemy1, cursors1;
 var bored = false;
-var bullets, bulletDirection;
-var lastFired = 0;
+var bullets1, bulletDirection;
+
 var speed = 300;
 var movingLeft = false, movingRight = false;
+var showSplashScreen = true;
 
 // Config
 var config = {
@@ -15,19 +17,21 @@ var config = {
     antialias: false,
     width: 800,
     height: 600,
-    scene: gameScene,
+    scene: [ bootScene, mainScene, gameOver ],
     physics: {
         default: 'arcade',
         arcade: {
-            debug: true
+            debug: false
         }
     },
     
 };
 
+
 // Load Game
 var game = new Phaser.Game(config);
-
+//game.scene.add("gameScene", gameScene);
+/* 
 // Load Assets
 gameScene.preload = function() {
     this.load.image('background', 'Assets/background/bgcity.jpg');
@@ -148,26 +152,16 @@ gameScene.create = function() {
         immovable: true });
 
     Phaser.Actions.SetXY(enemies.getChildren(), 500, 350, 200);
-
-    //bb = this.physics.add.collider(player, enemies, walkIntoEnemy);
     this.physics.add.overlap(player, enemies, walkIntoEnemyO);
 };
 
 gameScene.update = function(time, delta) {
-
-    
-    
     // Get bullet from bullets group
-
     if (cursors.space.isDown && time > lastFired)
     {
-        
         var bullet = bullets.get();
         if (bullet)
         {
-            //bullet.setActive(true).setVisible(true);
-            //bullet.fire(player, player);
-            //debugger;
             bullet.fire(player.x, player.y);
             this.physics.add.collider(enemies, bullets, hitEnemy, function ()
             {
@@ -202,8 +196,6 @@ gameScene.update = function(time, delta) {
     }
     else
     {
-        //movingLeft = false;
-        //movingRight = false;
         player.setVelocity(0);
 
         if(!bored){
@@ -219,7 +211,7 @@ gameScene.update = function(time, delta) {
             player.setVelocityY(-speed);
         }
     }
-};
+}; */
 
 function onEvent ()
 {
@@ -227,33 +219,16 @@ function onEvent ()
     player.anims.play('boredAnimation', true);
 }
 
-function hitEnemy(playerHit, bulletHit)
+/* function hitEnemy(playerHit, bulletHit)
 {
-    //console.log(playerHit);
-    //debugger;
     bullets.killAndHide(bulletHit);
     enemies.killAndHide(playerHit);
     playerHit.destroy();
     bulletHit.destroy();
-
-    /* if (enemy.active === true)
-    {
-        console.log('Woof');
-        // Destroy bullet
-        bulletHit.setActive(false).setVisible(false);
-        //bulletHit.destroy();
-        playerHit.setVisible(false).setActive(false);
-    } */
 }
 function walkIntoEnemyO(playerHit, enemy)
 {
-    debugger;
     playerHit.x = playerHit.x + ((playerHit.body.velocity.x/60)*-1);
-
-/*     player.body.stop();
-    player.setVelocityX(0); */
-
     playerHit.body.stop();
     playerHit.setVelocityX(0);
-
-}
+} */

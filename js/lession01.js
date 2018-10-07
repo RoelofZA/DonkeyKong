@@ -15,8 +15,6 @@ gameScene.create = function() {
     bg.setOrigin(0,0);
     this.player = this.add.sprite(150,150, 'slime');
     this.player.setScale(0.2, 0.2);
-    
-    //this.player.setOrigin(0, 0);
 };
 
 gameScene.update = function() {
