@@ -5,7 +5,6 @@ var mainScene = new Phaser.Class({
     initialize: 
     function mainScene(config) {
         console.log('[mainScene] init', config);
-        //debugger;
         Phaser.Scene.call(this, {key: "mainScene"});
         
     }, 
@@ -16,6 +15,7 @@ var mainScene = new Phaser.Class({
         this.load.image('metal', 'Assets/metal_plates_small.png');
         this.load.spritesheet('idle', 'assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 47, endFrame: 9 });
         this.load.spritesheet('walk', 'assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 47, startFrame: 10, endFrame: 13 });
+        this.load.spritesheet('skeletonWalk', 'assets/sprites/skeleton.png', { frameWidth: 224, frameHeight: 368, endFrame: 8 });
     },
     create: function() {
         console.log('[mainScene] create');
@@ -24,18 +24,19 @@ var mainScene = new Phaser.Class({
         this.bored = false;
         this.movingLeft = false;
         this.score = 0;
+        this.playerHealth = 100;
+        this.boundsX = 3494/2;
+        this.boundsY = 1200/2;
 
-        
-
-        this.cameras.main.setBounds(0, 0, 3494/2, 1200/2);
-        this.physics.world.setBounds(0, 0, 3494/2, 880/2);
+        this.cameras.main.setBounds(0, 0, this.boundsX, this.boundsY);
+        this.physics.world.setBounds(0, 150, this.boundsX, this.boundsY-150);
 
         cursors1 = this.input.keyboard.createCursorKeys();
 
         for (x = 0; x < 3; x++)
         {
             var bg = this.add.image((1747*0.3) * x, 0, 'background').setOrigin(0);
-            bg.setScale(0.3,0.3);
+            bg.setScale(0.354,0.354);
         }
 
         this.input.once('pointerdown', function () {
@@ -127,6 +128,13 @@ var mainScene = new Phaser.Class({
                 frameRate: 6,
                 repeat: -1
             });
+
+            this.anims.create({
+                key: 'skeletonWalkAnimation',
+                frames: this.anims.generateFrameNumbers('skeletonWalk', { start: 0, end: 7, first: 0 }),
+                frameRate: 6,
+                repeat: -1
+            });
         }
         
         this.player = this.physics.add.sprite(150, 150, 'idle');
@@ -138,24 +146,35 @@ var mainScene = new Phaser.Class({
         this.cameras.main.setDeadzone(300, 200);
 
         this.enemies.createMultiple({ 
-            key: 'metal', 
+            key: 'skeletonWalk', 
             frame: [0], 
             frameQuantity: 1, 
             repeat: 5,
-            immovable: true });
-
+            immovable: true,
+            setScale: {x:0.5}});
         
-        // Add Score
-        this.ScoreCard = this.add.text(10, 10, 'Score: ' + this.score, { fill: '#0f0' });
+            //debugger;
+            var childern = this.enemies.getChildren();
+        for (index = 0; index < childern.length; ++index) {
+            childern[index].anims.play('skeletonWalkAnimation', true);
+            childern[index].setVelocityX(-20);
+        }
 
-        Phaser.Actions.SetXY(this.enemies.getChildren(), 500, 350, 200);
-        this.physics.add.overlap(this.player, this.enemies, this.walkIntoEnemyO);
+        // Add Score
+        this.ScoreCard = this.add.text(10, 10, 'Score: ' + this.score + ' Health: ' + this.playerHealth, { fill: '#0f0' });
+        this.ScoreCard.setScrollFactor(0);
+
+        var rect = new Phaser.Geom.Rectangle(300, 290, this.boundsX, this.boundsY-370);
+
+        //  Randomly position the sprites within the rectangle
+        Phaser.Actions.RandomRectangle(this.enemies.getChildren(), rect);
+
+        //Phaser.Actions.SetXY(this.enemies.getChildren(), 500, 350, 200);
+        this.physics.add.overlap(this.player, this.enemies, this.walkIntoEnemyO, null, this);
 
     },
     update: function(time, delta) {
-        // /console.log('[BOOT] update');
-            // Get bullet from bullets group
-            //console.log('aa');
+
         if (cursors1.space.isDown && time > this.lastFired)
         {
             var bullet = this.bullets.get();
@@ -218,12 +237,12 @@ var mainScene = new Phaser.Class({
         playerHit.destroy();
         bulletHit.destroy();
         this.score+= 1;
-        this.ScoreCard.text = "Score: " + this.score;
+        this.ScoreCard.text = 'Score: ' + this.score + ' Health: ' + this.playerHealth;
         if (this.score>3)
         {
             console.log('From mainScene to GameOver');
 
-            this.scene.switch('gameOver');
+            this.scene.start('gameOver');
         }
     },
     walkIntoEnemyO: function(playerHit, enemy)
@@ -232,5 +251,13 @@ var mainScene = new Phaser.Class({
         playerHit.x = playerHit.x + ((playerHit.body.velocity.x/60)*-1);
         playerHit.body.stop();
         playerHit.setVelocityX(0);
+        this.playerHealth--;
+        if (this.playerHealth<=0)
+        {
+            console.log('Player Killed');
+
+            this.scene.start('gameOver');
+        }
+        this.ScoreCard.text = 'Score: ' + this.score + ' Health: ' + this.playerHealth;
     }
 });

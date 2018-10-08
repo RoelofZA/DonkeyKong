@@ -1,6 +1,6 @@
 
 
-const bootScene  = new Phaser.Class({
+var bootScene  = new Phaser.Class({
     Extends: Phaser.Scene,
     initialize: 
     function bootScene(){
@@ -21,7 +21,7 @@ const bootScene  = new Phaser.Class({
 
             console.log('From SceneA to SceneB');
             
-            this.game.scene.start('mainScene');
+            this.scene.start('mainScene');
 
         }, this);
 

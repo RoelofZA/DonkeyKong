@@ -15,6 +15,7 @@ var showSplashScreen = true;
 var config = {
     type: Phaser.AUTO,
     antialias: false,
+    parent: 'phaser-example',
     width: 800,
     height: 600,
     scene: [ bootScene, mainScene, gameOver ],
