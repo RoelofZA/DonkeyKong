@@ -17,7 +17,7 @@ var gameOver  = new Phaser.Class({
             this.scene.start('boot');
         }, [], this); 
         this.scene.bringToTop();
-        this.gameOverText = this.add.text(140, 180, 'GAME OVER', { fill: '#0f0', fontSize: '64px', align: 'center' });
+        this.gameOverText = this.add.text(140, 180, 'GAME OVER', { fill: '#f00', fontSize: '64px', align: 'center' });
     },
     update: function(){
         
