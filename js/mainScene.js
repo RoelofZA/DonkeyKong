@@ -40,11 +40,8 @@ var mainScene = new Phaser.Class({
         }
 
         this.input.once('pointerdown', function () {
-
             console.log('From SceneB to SceneA');
-
             this.scene.start('boot');
-
         }, this);
 
         // Add Bullets
@@ -149,15 +146,15 @@ var mainScene = new Phaser.Class({
             key: 'skeletonWalk', 
             frame: [0], 
             frameQuantity: 1, 
-            repeat: 5,
+            repeat: 10,
             immovable: true,
-            setScale: {x:0.5}});
+            setScale: {x:0.2}});
         
             //debugger;
             var childern = this.enemies.getChildren();
         for (index = 0; index < childern.length; ++index) {
             childern[index].anims.play('skeletonWalkAnimation', true);
-            childern[index].setVelocityX(-20);
+            childern[index].setVelocityX(-60);
         }
 
         // Add Score
@@ -238,10 +235,14 @@ var mainScene = new Phaser.Class({
         bulletHit.destroy();
         this.score+= 1;
         this.ScoreCard.text = 'Score: ' + this.score + ' Health: ' + this.playerHealth;
-        if (this.score>3)
+        if (this.score>100)
         {
             console.log('From mainScene to GameOver');
-
+            debugger;
+            starCountRef.push({
+                name: "Roelof" + Math.floor((Math.random() * 100) + 1),
+                score: this.score
+            });
             this.scene.start('gameOver');
         }
     },
@@ -255,6 +256,11 @@ var mainScene = new Phaser.Class({
         if (this.playerHealth<=0)
         {
             console.log('Player Killed');
+
+            starCountRef.push({
+                name: "Roelof" + Math.floor((Math.random() * 100) + 1),
+                score: this.score
+            });
 
             this.scene.start('gameOver');
         }

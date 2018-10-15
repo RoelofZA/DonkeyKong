@@ -6,6 +6,7 @@ var playerX = 2;
 var player1, enemy1, cursors1;
 var bored = false;
 var bullets1, bulletDirection;
+var highScoreTextG = "";
 
 var speed = 300;
 var movingLeft = false, movingRight = false;
