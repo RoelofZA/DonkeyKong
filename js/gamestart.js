@@ -20,14 +20,27 @@ var bootScene  = new Phaser.Class({
         this.input.once('pointerdown', function () {
 
             console.log('From SceneA to SceneB');
+            score = 0;
             
-            this.scene.start('mainScene');
+            this.scene.start('waveScene');
 
         }, this);
 
-        this.ScoreCard = this.add.text(140, 180, 'Donkey Kong\nvs\nDouble Dragon', { fill: '#0f0', fontSize: '64px', align: 'center' });
+        highScoreTextG = "";
+
+        this.gameName = this.add.text(140, 180, 'Donkey Kong\nvs\nDouble Dragon', { fill: '#0f0', fontSize: '64px', align: 'center' });
+        this.gameScores = this.add.text(280, 370, '', { fill: '#00A000', fontSize: '32px', align: 'center' });
+        var result = firebase.database().ref('donkeykong/scores').orderByChild('score').limitToLast(5);
+
+        result.on('value', function(snapshot) {
+            snapshot.forEach(function(child) {
+                var highScore = child.val();
+                highScoreTextG = '\n' + highScore.name + '\t' + highScore.score + highScoreTextG;
+                console.log(highScoreTextG);
+            });
+        }, this);
     },
     update: function(){
-
+        this.gameScores.text = highScoreTextG;
     }
 });

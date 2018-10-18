@@ -23,7 +23,6 @@ var mainScene = new Phaser.Class({
         this.lastFired = 0;
         this.bored = false;
         this.movingLeft = false;
-        this.score = 0;
         this.playerHealth = 100;
         this.boundsX = 3494/2;
         this.boundsY = 1200/2;
@@ -38,11 +37,6 @@ var mainScene = new Phaser.Class({
             var bg = this.add.image((1747*0.3) * x, 0, 'background').setOrigin(0);
             bg.setScale(0.354,0.354);
         }
-
-        this.input.once('pointerdown', function () {
-            console.log('From SceneB to SceneA');
-            this.scene.start('boot');
-        }, this);
 
         // Add Bullets
         var Bullet = new Phaser.Class({
@@ -75,8 +69,6 @@ var mainScene = new Phaser.Class({
                 if (this.active === false){
                     return;
                 }
-
-                console.log(this.active);
                 var i = 1;
                 if (bulletDirection) i=-1;
                 
@@ -135,6 +127,7 @@ var mainScene = new Phaser.Class({
         }
         
         this.player = this.physics.add.sprite(150, 150, 'idle');
+        this.player.setSize(11, 11, true);
         this.player.setScale(4,4);
         this.player.setBounce(1, 1);
         this.player.setCollideWorldBounds(true);
@@ -152,13 +145,26 @@ var mainScene = new Phaser.Class({
         
             //debugger;
             var childern = this.enemies.getChildren();
+
         for (index = 0; index < childern.length; ++index) {
             childern[index].anims.play('skeletonWalkAnimation', true);
-            childern[index].setVelocityX(-60);
+            childern[index].setVelocityX(-(60 + (enemyWave*20) + (10 * Math.random())));
+            childern[index].setCollideWorldBounds(true);
         }
 
+        this.time.addEvent({ delay: 2000, callback: function() {
+            var childern = this.enemies.getChildren();
+            for (index = 0; index < childern.length; ++index) {
+                var playerDirection =  childern[index].x >= this.player.x;
+                //debugger;
+                childern[index].setVelocityX((60 + (enemyWave*20) + (10 * Math.random())) * (playerDirection?-1:1));
+            }
+        }, callbackScope: this, repeat:100 });
+
+        //this.time.delayedCall(2000, , [{repeat:100}], this); 
+
         // Add Score
-        this.ScoreCard = this.add.text(10, 10, 'Score: ' + this.score + ' Health: ' + this.playerHealth, { fill: '#0f0' });
+        this.ScoreCard = this.add.text(10, 10, 'Score: ' + score + ' Health: ' + this.playerHealth, { fill: '#0f0' });
         this.ScoreCard.setScrollFactor(0);
 
         var rect = new Phaser.Geom.Rectangle(300, 290, this.boundsX, this.boundsY-370);
@@ -171,6 +177,9 @@ var mainScene = new Phaser.Class({
 
     },
     update: function(time, delta) {
+
+        
+        
 
         if (cursors1.space.isDown && time > this.lastFired)
         {
@@ -233,17 +242,38 @@ var mainScene = new Phaser.Class({
         this.enemies.killAndHide(playerHit);
         playerHit.destroy();
         bulletHit.destroy();
-        this.score+= 1;
-        this.ScoreCard.text = 'Score: ' + this.score + ' Health: ' + this.playerHealth;
-        if (this.score>100)
+        score+= 1;
+        this.ScoreCard.text = 'Score: ' + score + ' Health: ' + this.playerHealth;
+
+        console.log('Count Active Enemies: ' + this.enemies.countActive());
+
+        if (this.enemies.countActive() == 0)
         {
-            console.log('From mainScene to GameOver');
-            debugger;
-            starCountRef.push({
-                name: "Roelof" + Math.floor((Math.random() * 100) + 1),
-                score: this.score
-            });
-            this.scene.start('gameOver');
+            enemyWave++;
+            this.scene.start('waveScene');
+
+            /* this.enemies.createMultiple({ 
+                key: 'skeletonWalk', 
+                frame: [0], 
+                frameQuantity: 1, 
+                repeat: 5 + 2,
+                immovable: true,
+                setScale: {x:0.5}});
+            
+                //debugger;
+                var childern = this.enemies.getChildren();
+    
+            for (index = 0; index < childern.length; ++index) {
+                childern[index].anims.play('skeletonWalkAnimation', true);
+                childern[index].setVelocityX(-(40 + (enemyWave*20)));
+            }
+
+            var rect = new Phaser.Geom.Rectangle(this.player.x + 100, 290, this.boundsX, this.boundsY-370);
+            //  Randomly position the sprites within the rectangle
+            Phaser.Actions.RandomRectangle(this.enemies.getChildren(), rect);
+
+            //Phaser.Actions.SetXY(this.enemies.getChildren(), 500, 350, 200);
+            this.physics.add.overlap(this.player, this.enemies, this.walkIntoEnemyO, null, this); */
         }
     },
     walkIntoEnemyO: function(playerHit, enemy)
@@ -252,18 +282,17 @@ var mainScene = new Phaser.Class({
         playerHit.x = playerHit.x + ((playerHit.body.velocity.x/60)*-1);
         playerHit.body.stop();
         playerHit.setVelocityX(0);
+        enemy.setVelocityX(0);
         this.playerHealth--;
         if (this.playerHealth<=0)
         {
             console.log('Player Killed');
+            enemyWave = 1;
 
-            starCountRef.push({
-                name: "Roelof" + Math.floor((Math.random() * 100) + 1),
-                score: this.score
-            });
+            
 
             this.scene.start('gameOver');
         }
-        this.ScoreCard.text = 'Score: ' + this.score + ' Health: ' + this.playerHealth;
+        this.ScoreCard.text = 'Score: ' + score + ' Health: ' + this.playerHealth;
     }
 });
