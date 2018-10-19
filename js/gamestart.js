@@ -16,14 +16,17 @@ var bootScene  = new Phaser.Class({
         
         //game.scene.remove('mainScene');
         //this.scene.add('mainScene', mainScene);
-
+        score = 0;
         this.input.once('pointerdown', function () {
-
             console.log('From SceneA to SceneB');
             score = 0;
-            
             this.scene.start('waveScene');
 
+        }, this);
+
+        this.input.keyboard.on('keydown', function (event) {
+            score = 0;
+            this.scene.start('waveScene');
         }, this);
 
         highScoreTextG = "";
@@ -36,7 +39,6 @@ var bootScene  = new Phaser.Class({
             snapshot.forEach(function(child) {
                 var highScore = child.val();
                 highScoreTextG = '\n' + highScore.name + '\t' + highScore.score + highScoreTextG;
-                console.log(highScoreTextG);
             });
         }, this);
     },

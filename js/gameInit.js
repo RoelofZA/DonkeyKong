@@ -1,4 +1,4 @@
-var enemyWave = 1, score = 0;
+var enemyWave = 1, score = 0, cursors1;
 
 var zzz = 0.1, bb;
 var playerX = 2;
@@ -21,7 +21,7 @@ var config = {
     physics: {
         default: 'arcade',
         arcade: {
-            debug: true
+            debug: false
         }
     },
     

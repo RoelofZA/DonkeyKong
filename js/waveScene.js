@@ -20,8 +20,8 @@ var waveScene  = new Phaser.Class({
 
         this.scene.bringToTop();
         
-        this.nextWaveText = this.add.text(170, 180, 'Wave ' + enemyWave.toString(), { fill: '#f00', fontSize: '64px', align: 'center' });
-        
+        this.nextWaveText = this.add.text(300, 200, 'Wave ' + enemyWave.toString(), { fill: '#f00', fontSize: '64px', align: 'center' });
+        this.nextWaveText.x = 400 - (this.nextWaveText.width/2);
     },
     update: function(){
     }

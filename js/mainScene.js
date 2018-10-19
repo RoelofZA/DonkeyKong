@@ -1,7 +1,6 @@
 var mainScene = new Phaser.Class({
     Extends: Phaser.Scene,
     active: true,
-    cursors: null,
     initialize: 
     function mainScene(config) {
         console.log('[mainScene] init', config);
@@ -11,11 +10,11 @@ var mainScene = new Phaser.Class({
     preload: function() {
         console.log('[mainScene] preload');
         this.load.image('background', 'Assets/background/bgcity.jpg');
-        this.load.image('slime', 'Assets/ooz_slime_small.png');
         this.load.image('metal', 'Assets/metal_plates_small.png');
-        this.load.spritesheet('idle', 'assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 47, endFrame: 9 });
-        this.load.spritesheet('walk', 'assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 47, startFrame: 10, endFrame: 13 });
-        this.load.spritesheet('skeletonWalk', 'assets/sprites/skeleton.png', { frameWidth: 224, frameHeight: 368, endFrame: 8 });
+        this.load.spritesheet('idle', 'Assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 46, endFrame: 9 });
+        this.load.spritesheet('walk', 'Assets/sprites/simonspritesheet.png', { frameWidth: 32, frameHeight: 46, startFrame: 10, endFrame: 13 });
+        this.load.spritesheet('playerFire', 'Assets/sprites/simonspritesheet.png', { frameWidth: 39, frameHeight: 46, startFrame: 0, endFrame: 50 });
+        this.load.spritesheet('skeletonWalk', 'Assets/sprites/skeleton.png', { frameWidth: 224, frameHeight: 368, endFrame: 8 });
     },
     create: function() {
         console.log('[mainScene] create');
@@ -28,8 +27,8 @@ var mainScene = new Phaser.Class({
         this.boundsY = 1200/2;
 
         this.cameras.main.setBounds(0, 0, this.boundsX, this.boundsY);
-        this.physics.world.setBounds(0, 150, this.boundsX, this.boundsY-150);
-
+        this.physics.world.setBounds(0, 200, this.boundsX, this.boundsY-270);
+        cursors1 = null;
         cursors1 = this.input.keyboard.createCursorKeys();
 
         for (x = 0; x < 3; x++)
@@ -47,14 +46,15 @@ var mainScene = new Phaser.Class({
 
             function Bullet (scene)
             {
-                Phaser.Physics.Arcade.Sprite.call(this, scene, 0, 0, 'slime');
+                Phaser.Physics.Arcade.Sprite.call(this, scene, 0, 0, 'metal');
                 this.pathSpeed = Phaser.Math.GetSpeed(2000, 0.1);
                 this.born = 0;
             },
 
             fire: function (x, y)
             {
-                this.setPosition(x+50, y);
+                this.setPosition(x+50, y-25);
+                this.setScale(0.1, 0.1);
                 this.setActive(true);
                 this.setVisible(true);
                 this.born = 0;
@@ -75,8 +75,6 @@ var mainScene = new Phaser.Class({
                 this.setPosition(this.x + (this.pathSpeed * i), this.y);
 
                 this.born += delta;
-
-                //console.log(this.born);
                 if (this.born >=400)
                 {
                     this.setActive(false);
@@ -105,6 +103,12 @@ var mainScene = new Phaser.Class({
             });
 
             this.anims.create({
+                key: 'playerFire',
+                frames: this.anims.generateFrameNumbers('playerFire', { start: 32, end: 34, first: 32 }),
+                frameRate: 10
+            });
+
+            this.anims.create({
                 key: 'boredAnimation',
                 frames: this.anims.generateFrameNumbers('idle', { start: 0, end: 9, first: 0 }),
                 frameRate: 20,
@@ -126,10 +130,10 @@ var mainScene = new Phaser.Class({
             });
         }
         
-        this.player = this.physics.add.sprite(150, 150, 'idle');
+        this.player = this.physics.add.sprite(150, 250, 'idle');
         this.player.setSize(11, 11, true);
         this.player.setScale(4,4);
-        this.player.setBounce(1, 1);
+        this.player.setBounce(0, 0);
         this.player.setCollideWorldBounds(true);
 
         this.cameras.main.startFollow(this.player, true);
@@ -156,12 +160,9 @@ var mainScene = new Phaser.Class({
             var childern = this.enemies.getChildren();
             for (index = 0; index < childern.length; ++index) {
                 var playerDirection =  childern[index].x >= this.player.x;
-                //debugger;
                 childern[index].setVelocityX((60 + (enemyWave*20) + (10 * Math.random())) * (playerDirection?-1:1));
             }
         }, callbackScope: this, repeat:100 });
-
-        //this.time.delayedCall(2000, , [{repeat:100}], this); 
 
         // Add Score
         this.ScoreCard = this.add.text(10, 10, 'Score: ' + score + ' Health: ' + this.playerHealth, { fill: '#0f0' });
@@ -177,22 +178,19 @@ var mainScene = new Phaser.Class({
 
     },
     update: function(time, delta) {
-
-        
-        
-
         if (cursors1.space.isDown && time > this.lastFired)
         {
             var bullet = this.bullets.get();
             if (bullet)
             {
+                this.player.anims.play('playerFire', true);
                 bullet.fire(this.player.x, this.player.y);
                 this.physics.add.collider(this.enemies, this.bullets, this.hitEnemy, function ()
                 {
                     this.physics.world.removeCollider(this);
                 }, this);
                 bulletDirection = this.player.flipX;
-                lastFired = time + 50;
+                this.lastFired = time + 1000;
                 console.log('fire');
             }
         }
@@ -251,29 +249,6 @@ var mainScene = new Phaser.Class({
         {
             enemyWave++;
             this.scene.start('waveScene');
-
-            /* this.enemies.createMultiple({ 
-                key: 'skeletonWalk', 
-                frame: [0], 
-                frameQuantity: 1, 
-                repeat: 5 + 2,
-                immovable: true,
-                setScale: {x:0.5}});
-            
-                //debugger;
-                var childern = this.enemies.getChildren();
-    
-            for (index = 0; index < childern.length; ++index) {
-                childern[index].anims.play('skeletonWalkAnimation', true);
-                childern[index].setVelocityX(-(40 + (enemyWave*20)));
-            }
-
-            var rect = new Phaser.Geom.Rectangle(this.player.x + 100, 290, this.boundsX, this.boundsY-370);
-            //  Randomly position the sprites within the rectangle
-            Phaser.Actions.RandomRectangle(this.enemies.getChildren(), rect);
-
-            //Phaser.Actions.SetXY(this.enemies.getChildren(), 500, 350, 200);
-            this.physics.add.overlap(this.player, this.enemies, this.walkIntoEnemyO, null, this); */
         }
     },
     walkIntoEnemyO: function(playerHit, enemy)
@@ -286,11 +261,7 @@ var mainScene = new Phaser.Class({
         this.playerHealth--;
         if (this.playerHealth<=0)
         {
-            console.log('Player Killed');
             enemyWave = 1;
-
-            
-
             this.scene.start('gameOver');
         }
         this.ScoreCard.text = 'Score: ' + score + ' Health: ' + this.playerHealth;

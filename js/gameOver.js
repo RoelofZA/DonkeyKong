@@ -27,11 +27,19 @@ var gameOver  = new Phaser.Class({
         this.scene.bringToTop();
         this.gameOverText = this.add.text(170, 180, 'GAME OVER', { fill: '#f00', fontSize: '64px', align: 'center' });
 
+        this.gameOverText.x = 400 - (this.gameOverText.width/2);
+
         this.highScoresCaptionText = this.add.text(170, 250, 'High Scores:', { fill: '#00f', fontSize: '64px', align: 'center' });
         this.highScoresText = this.add.text(220, 300, '', { fill: '#0f0', fontSize: '20px', align: 'center' });
 
+        this.highScoresCaptionText.x = 400 - (this.highScoresCaptionText.width/2);
+        this.highScoresText.x = 400 - (this.highScoresText.width/2);
+
         askName = this.add.text(100, 50, 'Enter your name:', { font: '32px Courier', fill: '#ffffff' , align: 'center'});
-        textEntry = this.add.text(120, 90, '', { font: '32px Courier', fill: '#ffffff' , align: 'center'});
+        textEntry = this.add.text(400, 90, '', { font: '32px Courier', fill: '#ffffff' , align: 'center'});
+
+        askName.x = 400 - (askName.width/2);
+        textEntry.x = askName.x;
 
         keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         keyBackspace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.BACKSPACE);
@@ -42,7 +50,7 @@ var gameOver  = new Phaser.Class({
             {
                 textEntry.text = textEntry.text.substr(0, textEntry.text.length - 1);
             }
-            else if (event.keyCode === 32 || (event.keyCode >= 48 && event.keyCode < 90))
+            else if (event.keyCode === 32 || (event.keyCode >= 48 && event.keyCode <= 90))
             {
                 textEntry.text += event.key;
             }
@@ -74,5 +82,6 @@ var gameOver  = new Phaser.Class({
     },
     update: function(){
         this.highScoresText.setText(highScoreTextG);
+        this.highScoresText.x = 400 - (this.highScoresText.width/2);
     }
 });
